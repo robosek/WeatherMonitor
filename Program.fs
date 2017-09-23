@@ -2,6 +2,23 @@
 open System.Net.Http
 open Newtonsoft.Json
 open System.Collections.Generic
+open System.IO
+
+module AppConfig = 
+    type Config = {
+        apikey: string
+    }
+
+    let mutable private mainConfig : (Config option) = None 
+
+    let private initializeConfig =
+         let textJson = File.ReadAllText("app.config.json")
+         mainConfig <- Some(JsonConvert.DeserializeObject<Config>(textJson))
+         mainConfig
+    
+    let getMainConfig = 
+        mainConfig
+
 
 module SimpleHttpClient = 
     let mutable baseAddress = ""
@@ -20,8 +37,9 @@ module SimpleHttpClient =
         uri
         
 module WeatherInformation =
+    let config = AppConfig.getMainConfig
     let apiAddress = "https://api.openweathermap.org/data/2.5/weather?"
-    let apiKey= ""
+    let apiKey= if config.IsSome then config.Value.apikey else String.Empty
 
     type Weather = { 
         id: string
